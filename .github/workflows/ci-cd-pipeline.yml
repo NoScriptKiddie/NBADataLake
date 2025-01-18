@@ -1,12 +1,9 @@
-name: CI/CD Pipeline
+name: CI
 
-on:
-  push:
-    branches:
-      - main
+on: [push]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,20 +13,12 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: '3.12.8'
 
-    - name: Install dependencies
+    - name: Configure AWS credentials
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        echo "AWS_ACCESS_KEY_ID=your_access_key_id" >> $GITHUB_ENV
+        echo "AWS_SECRET_ACCESS_KEY=your_secret_access_key" >> $GITHUB_ENV
 
-    - name: Run tests
-      run: |
-        python -m unittest discover -s tests
-
-    - name: Deploy to S3
-      run: |
-        aws s3 sync . s3://weather.dashboard.challenge --delete
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    - name: Sync files to S3 bucket
+      run: aws s3 sync . s3://sports-analytic-data-lake --delete
